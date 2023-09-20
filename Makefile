@@ -12,3 +12,22 @@ test:
 	staticcheck -checks=all ./...
 
 all:
+	run
+
+
+build:
+	docker-compose build
+
+up:
+	docker-compose up -d
+
+down:
+	docker-compose down
+
+start:
+	docker-compose start
+
+stop:
+	docker-compose stop
+
+start-all: build up
