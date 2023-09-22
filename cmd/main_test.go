@@ -32,6 +32,9 @@ func runTests(t *testing.T, tests []testCase, testFunc func(string) (string, err
 
 func TestGenerateSQL(t *testing.T) {
 	t.Parallel()
+
+	// =================================================================================================================
+
 	t.Run("Insert", insertStatement)
 
 	t.Run("Update", updateStatement)
