@@ -4,124 +4,68 @@ import (
 	"testing"
 )
 
-func TestGenerateInsertSQL(t *testing.T) {
-	type args struct {
-		oplog string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "Insert Operations",
-			args: args{
-				oplog: `{
-                    "op" : "i",
-                    "ns" : "test.student",
-                    "o" : {
-                        "_id" : "635b79e231d82a8ab1de863b",
-                        "name" : "Selena Miller",
-                        "roll_no" : 51,
-                        "is_graduated" : false,
-                        "date_of_birth" : "2000-01-30"
-                    }
-                }`,
-			},
-			want:    "INSERT INTO student (_id, date_of_birth, is_graduated, name, roll_no) VALUES ('635b79e231d82a8ab1de863b', '2000-01-30', false, 'Selena Miller', 51);",
-			wantErr: false,
-		},
-	}
+type args struct {
+	opLog string
+}
 
+type testCase struct {
+	name    string
+	args    args
+	want    string
+	wantErr bool
+}
+
+func runTests(t *testing.T, tests []testCase, testFunc func(string) (string, error)) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenerateInsertSQL(tt.args.oplog)
+			got, err := testFunc(tt.args.opLog)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GenerateInsertSQL() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("GenerateInsertSQL() = %v, want %v", got, tt.want)
+				t.Errorf("got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-// func TestGenerateSQL(t *testing.T) {
-// 	type args struct {
-// 		opLog string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		args    args
-// 		want    string
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "Test Invalid Operation",
-// 			args: args{
-// 				opLog: `{
-// 					"op": "x",
-// 					"ns": "test.student",
-// 					"o": {
-// 						"_id": "635b79e231d82a8ab1de863b"
-// 					}
-// 				}`,
-// 			},
-// 			want:    "",
-// 			wantErr: true, // Expecting an error as the operation is invalid
-// 		},
-// 		{
-// 			name: "Test Missing Namespace",
-// 			args: args{
-// 				opLog: `{
-// 					"op": "i",
-// 					"o": {
-// 						"_id": "635b79e231d82a8ab1de863b"
-// 					}
-// 				}`,
-// 			},
-// 			want:    "",
-// 			wantErr: true, // Expecting an error as the namespace is missing
-// 		},
-// 		{
-// 			name: "Test Missing o Field",
-// 			args: args{
-// 				opLog: `{
-// 					"op": "i",
-// 					"ns": "test.student"
-// 				}`,
-// 			},
-// 			want:    "",
-// 			wantErr: true, // Expecting an error as the o field is missing
-// 		},
-// 		// TODO: Add more integration test cases as needed.
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			got, err := GenerateSQL(tt.args.opLog)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("GenerateSQL() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if got != tt.want {
-// 				t.Errorf("GenerateSQL() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+func TestGenerateSQL(t *testing.T) {
+	t.Parallel()
+	t.Run("Insert", insertStatement)
 
-func TestGenerateUpdateSQL(t *testing.T) {
-	type args struct {
-		opLog string
+	t.Run("Update", updateStatement)
+
+	t.Run("Delete", deleteStatement)
+}
+
+func insertStatement(t *testing.T) {
+	tests := []testCase{
+		{
+			name: "Insert Operations",
+			args: args{
+				opLog: `{
+						"op" : "i",
+						"ns" : "test.student",
+						"o" : {
+							"_id" : "635b79e231d82a8ab1de863b",
+							"name" : "Selena Miller",
+							"roll_no" : 51,
+							"is_graduated" : false,
+							"date_of_birth" : "2000-01-30"
+						}
+					}`,
+			},
+			want:    "INSERT INTO student (_id, date_of_birth, is_graduated, name, roll_no) VALUES ('635b79e231d82a8ab1de863b', '2000-01-30', false, 'Selena Miller', 51);",
+			wantErr: false,
+		},
 	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
+	runTests(t, tests, GenerateInsertSQL)
+}
+
+func updateStatement(t *testing.T) {
+
+	tests := []testCase{
 		{
 			name: "Test Update is_graduated",
 			args: args{
@@ -187,31 +131,11 @@ func TestGenerateUpdateSQL(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenerateUpdateSQL(tt.args.opLog)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenerateUpdateSQL() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("GenerateUpdateSQL() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	runTests(t, tests, GenerateUpdateSQL)
 }
 
-func TestGenerateDeleteSQL(t *testing.T) {
-	type args struct {
-		opLog string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
+func deleteStatement(t *testing.T) {
+	tests := []testCase{
 		{
 			name: "Test Delete Operation",
 			args: args{
@@ -227,16 +151,6 @@ func TestGenerateDeleteSQL(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenerateDeleteSQL(tt.args.opLog)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenerateDeleteSQL() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("GenerateDeleteSQL() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	runTests(t, tests, GenerateDeleteSQL)
+
 }
