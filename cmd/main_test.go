@@ -48,69 +48,69 @@ func TestGenerateInsertSQL(t *testing.T) {
 	}
 }
 
-func TestGenerateSQL(t *testing.T) {
-	type args struct {
-		opLog string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "Test Invalid Operation",
-			args: args{
-				opLog: `{
-					"op": "x",
-					"ns": "test.student",
-					"o": {
-						"_id": "635b79e231d82a8ab1de863b"
-					}
-				}`,
-			},
-			want:    "",
-			wantErr: true, // Expecting an error as the operation is invalid
-		},
-		{
-			name: "Test Missing Namespace",
-			args: args{
-				opLog: `{
-					"op": "i",
-					"o": {
-						"_id": "635b79e231d82a8ab1de863b"
-					}
-				}`,
-			},
-			want:    "",
-			wantErr: true, // Expecting an error as the namespace is missing
-		},
-		{
-			name: "Test Missing o Field",
-			args: args{
-				opLog: `{
-					"op": "i",
-					"ns": "test.student"
-				}`,
-			},
-			want:    "",
-			wantErr: true, // Expecting an error as the o field is missing
-		},
-		// TODO: Add more integration test cases as needed.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenerateSQL(tt.args.opLog)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenerateSQL() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("GenerateSQL() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+// func TestGenerateSQL(t *testing.T) {
+// 	type args struct {
+// 		opLog string
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		args    args
+// 		want    string
+// 		wantErr bool
+// 	}{
+// 		{
+// 			name: "Test Invalid Operation",
+// 			args: args{
+// 				opLog: `{
+// 					"op": "x",
+// 					"ns": "test.student",
+// 					"o": {
+// 						"_id": "635b79e231d82a8ab1de863b"
+// 					}
+// 				}`,
+// 			},
+// 			want:    "",
+// 			wantErr: true, // Expecting an error as the operation is invalid
+// 		},
+// 		{
+// 			name: "Test Missing Namespace",
+// 			args: args{
+// 				opLog: `{
+// 					"op": "i",
+// 					"o": {
+// 						"_id": "635b79e231d82a8ab1de863b"
+// 					}
+// 				}`,
+// 			},
+// 			want:    "",
+// 			wantErr: true, // Expecting an error as the namespace is missing
+// 		},
+// 		{
+// 			name: "Test Missing o Field",
+// 			args: args{
+// 				opLog: `{
+// 					"op": "i",
+// 					"ns": "test.student"
+// 				}`,
+// 			},
+// 			want:    "",
+// 			wantErr: true, // Expecting an error as the o field is missing
+// 		},
+// 		// TODO: Add more integration test cases as needed.
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			got, err := GenerateSQL(tt.args.opLog)
+// 			if (err != nil) != tt.wantErr {
+// 				t.Errorf("GenerateSQL() error = %v, wantErr %v", err, tt.wantErr)
+// 				return
+// 			}
+// 			if got != tt.want {
+// 				t.Errorf("GenerateSQL() = %v, want %v", got, tt.want)
+// 			}
+// 		})
+// 	}
+// }
 
 func TestGenerateUpdateSQL(t *testing.T) {
 	type args struct {

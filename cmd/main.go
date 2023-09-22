@@ -117,13 +117,21 @@ func GenerateUpdateSQL(opLog string) (string, error) {
 	// Constructing the SQL update statement
 	var updates []string
 	for op, fields := range diff {
+		fieldsMap, ok := fields.(map[string]interface{})
+		if !ok {
+			return "", fmt.Errorf("invalid fields in diff for operation %s", op)
+		}
 		switch op {
 		case "u": // Handle update operation
-			for column, value := range fields.(map[string]interface{}) {
-				updates = append(updates, fmt.Sprintf("%s = %v", column, value))
+			columns, values, err := getColumnAndValue(fieldsMap)
+			if err != nil {
+				return "", err
+			}
+			for i, column := range columns {
+				updates = append(updates, fmt.Sprintf("%s = %s", column, values[i]))
 			}
 		case "d": // Handle delete operation
-			for column := range fields.(map[string]interface{}) {
+			for column := range fieldsMap {
 				updates = append(updates, fmt.Sprintf("%s = NULL", column))
 			}
 		}
