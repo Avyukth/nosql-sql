@@ -19,6 +19,24 @@ type OpLogEntry struct {
 	Op string                 `json:"op"`
 	Ns string                 `json:"ns"`
 	O  map[string]interface{} `json:"o"`
+	O2 map[string]interface{} `json:"o2"`
+}
+
+func GenerateSQL(opLog string) (string, error) {
+	var opLogObject OpLogEntry
+	err := json.Unmarshal([]byte(opLog), &opLogObject)
+	if err != nil {
+		return "", err
+	}
+
+	switch opLogObject.Op {
+	case "i":
+		return GenerateInsertSQL(opLog)
+	case "u":
+		return GenerateUpdateSQL(opLog)
+	default:
+		return "", nil
+	}
 }
 
 func GenerateInsertSQL(opLog string) (string, error) {
@@ -72,4 +90,43 @@ func getColumnAndValue(operation map[string]interface{}) ([]string, []string, er
 	}
 
 	return columns, values, nil
+}
+
+func GenerateUpdateSQL(opLog string) (string, error) {
+	var opLogObject OpLogEntry
+	err := json.Unmarshal([]byte(opLog), &opLogObject)
+	if err != nil {
+		return "", err
+	}
+
+	// Extracting table name from Ns
+	tableName := strings.Split(opLogObject.Ns, ".")[1]
+
+	// Extracting the _id from o2 field
+	id, ok := opLogObject.O2["_id"]
+	if !ok {
+		return "", fmt.Errorf("missing _id in o2 field")
+	}
+
+	// Extracting the diff field from o field
+	diff, ok := opLogObject.O["diff"].(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("missing or invalid diff in o field")
+	}
+
+	// Constructing the SQL update statement
+	var updates []string
+	for op, fields := range diff {
+		switch op {
+		case "u": // Handle update operation
+			for column, value := range fields.(map[string]interface{}) {
+				updates = append(updates, fmt.Sprintf("%s = %v", column, value))
+			}
+		case "d": // Handle delete operation
+			// You can handle the delete operation here if needed
+		}
+	}
+
+	sql := fmt.Sprintf("UPDATE %s SET %s WHERE _id = '%v';", tableName, strings.Join(updates, ", "), id)
+	return sql, nil
 }

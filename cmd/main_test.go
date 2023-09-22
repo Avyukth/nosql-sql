@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGenerateInsertSQL(t *testing.T) {
 	type args struct {
@@ -41,6 +43,32 @@ func TestGenerateInsertSQL(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("GenerateInsertSQL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGenerateSQL(t *testing.T) {
+	type args struct {
+		opLog string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GenerateSQL(tt.args.opLog)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GenerateSQL() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GenerateSQL() = %v, want %v", got, tt.want)
 			}
 		})
 	}
