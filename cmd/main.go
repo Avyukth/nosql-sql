@@ -123,7 +123,9 @@ func GenerateUpdateSQL(opLog string) (string, error) {
 				updates = append(updates, fmt.Sprintf("%s = %v", column, value))
 			}
 		case "d": // Handle delete operation
-			// You can handle the delete operation here if needed
+			for column := range fields.(map[string]interface{}) {
+				updates = append(updates, fmt.Sprintf("%s = NULL", column))
+			}
 		}
 	}
 
