@@ -200,3 +200,43 @@ func TestGenerateUpdateSQL(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateDeleteSQL(t *testing.T) {
+	type args struct {
+		opLog string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+		{
+			name: "Test Delete Operation",
+			args: args{
+				opLog: `{
+            "op": "d",
+            "ns": "test.student",
+            "o": {
+                "_id": "635b79e231d82a8ab1de863b"
+            }
+        }`,
+			},
+			want:    "DELETE FROM student WHERE _id = '635b79e231d82a8ab1de863b';",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GenerateDeleteSQL(tt.args.opLog)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GenerateDeleteSQL() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GenerateDeleteSQL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

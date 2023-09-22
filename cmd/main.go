@@ -34,6 +34,8 @@ func GenerateSQL(opLog string) (string, error) {
 		return GenerateInsertSQL(opLog)
 	case "u":
 		return GenerateUpdateSQL(opLog)
+	case "d":
+		return GenerateDeleteSQL(opLog)
 	default:
 		return "", nil
 	}
@@ -138,5 +140,25 @@ func GenerateUpdateSQL(opLog string) (string, error) {
 	}
 
 	sql := fmt.Sprintf("UPDATE %s SET %s WHERE _id = '%v';", tableName, strings.Join(updates, ", "), id)
+	return sql, nil
+}
+
+func GenerateDeleteSQL(opLog string) (string, error) {
+	var opLogObject OpLogEntry
+	err := json.Unmarshal([]byte(opLog), &opLogObject)
+	if err != nil {
+		return "", err
+	}
+
+	// Extracting table name from Ns
+	tableName := strings.Split(opLogObject.Ns, ".")[1]
+
+	// Extracting the _id from o field
+	id, ok := opLogObject.O["_id"].(string)
+	if !ok {
+		return "", fmt.Errorf("missing or invalid _id in o field")
+	}
+
+	sql := fmt.Sprintf("DELETE FROM %s WHERE _id = '%s';", tableName, id)
 	return sql, nil
 }
